@@ -20,6 +20,8 @@ describe("General", () => {
   it("Allows you to set the url on creation", () => {
     const client = new SDK({
       url: "https://demo-api.getdirectus.com/",
+      project: "testProject",
+      mode: "jwt",
     }) as any;
     expect(client.config.url).to.equal("https://demo-api.getdirectus.com/");
   });
