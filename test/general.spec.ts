@@ -52,6 +52,6 @@ describe("General", () => {
 
   it("Defaults the project to underscore (_)", () => {
     const client = new SDK(undefined as any) as any;
-    expect(client.config.project).to.equal("_");
+    expect(client.config.project).to.be.undefined;
   });
 });

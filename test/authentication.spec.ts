@@ -40,6 +40,7 @@ describe("Authentication", () => {
       await client.login({
         email: "test@example.com",
         password: "testPassword",
+        project: "testProject",
         url: "https://demo-api.getdirectus.com",
       });
 
@@ -50,15 +51,20 @@ describe("Authentication", () => {
       await client.login({
         email: "test@example.com",
         password: "testPassword",
+        project: "testProject",
+        url: "https://demo-api.getdirectus.com",
       });
 
       expect(client.api.xhr.request).to.have.been.calledWith({
-        baseURL: "https://demo-api.getdirectus.com/_/",
+        baseURL: "https://demo-api.getdirectus.com/testProject/",
         data: {
           email: "test@example.com",
           password: "testPassword",
+          mode: "jwt",
         },
-        headers: {},
+        headers: {
+          "X-Directus-Project": "testProject",
+        },
         method: "post",
         params: {},
         url: "/auth/authenticate",
@@ -69,6 +75,7 @@ describe("Authentication", () => {
       await client.login({
         email: "text@example.com",
         password: "testPassword",
+        project: "testProject",
       });
 
       expect(client.config.token).to.equal("abcdef");
@@ -94,12 +101,7 @@ describe("Authentication", () => {
         url: "https://example.com",
       });
 
-      expect(result).to.deep.equal({
-        localExp: client.config.localExp,
-        project: "testProject",
-        token: "abcdef",
-        url: "https://example.com",
-      });
+      expect(result).to.deep.equal({ data: { token: "abcdef" } });
     });
   });
 
@@ -107,14 +109,15 @@ describe("Authentication", () => {
     it("Nullifies the token, url, and project", async () => {
       await client.logout();
 
-      expect(client.config.token).to.be.undefined;
-      expect(client.config.url).to.be.undefined;
-      expect(client.config.project).to.equal("_");
+      expect(client.config.token).to.be.null;
+      expect(client.config.url).to.be.null;
+      expect(client.config.project).to.be.null;
     });
   });
 
   describe("#refresh()", () => {
     it("Resolves with the new token", async () => {
+      client.config.project = "testProject";
       const result = await client.refresh("oldToken");
       expect(result).to.deep.include({
         data: {
@@ -150,22 +153,30 @@ describe("Authentication", () => {
         },
         meta: undefined,
       });
+      client.config.url = "https://example.com";
+      client.config.project = "testProject";
       client.config.token = jwt.sign({ foo: "bar" }, "secret-string", {
         expiresIn: "20s",
         noTimestamp: true,
       });
       client.config.localExp = Date.now() + 10e2;
+
       await client.refreshIfNeeded();
+
       expect(client.config.token).to.equal("abcdef");
       (client.api.auth.refresh as any).restore();
     });
 
     it("Calls refresh() if expiry date is within 30 seconds of now", async () => {
       sinon.stub(client.api.auth, "refresh").resolves();
+      client.config.url = "https://example.com";
+      client.config.project = "testProject";
+
       client.config.token = jwt.sign({ foo: "bar" }, "secret-string", {
         expiresIn: "1h",
         noTimestamp: true,
       });
+      await client.api.auth.refreshIfNeeded();
       expect(client.api.auth.refreshIfNeeded()).to.be.undefined;
       client.config.token = jwt.sign({ foo: "bar" }, "secret-string", {
         expiresIn: "20s",
@@ -185,6 +196,8 @@ describe("Authentication", () => {
         meta: undefined,
       });
 
+      client.config.url = "https://demo-api.getdirectus.com";
+      client.config.project = "testProject";
       client.config.token = jwt.sign({ foo: "bar" }, "secret-string", {
         expiresIn: "15s",
         noTimestamp: true,
@@ -192,7 +205,7 @@ describe("Authentication", () => {
 
       (client.api.auth as any).onAutoRefreshSuccess = info => {
         expect(info).to.deep.include({
-          project: "_",
+          project: "testProject",
           token: "abcdef",
           url: "https://demo-api.getdirectus.com",
         });
@@ -210,6 +223,8 @@ describe("Authentication", () => {
         message: "Network Error",
       });
 
+      client.config.url = "https://example.com";
+      client.config.project = "testProject";
       client.config.token = jwt.sign({ foo: "bar" }, "secret-string", {
         expiresIn: "20s",
         noTimestamp: true,
@@ -240,6 +255,8 @@ describe("Authentication", () => {
     it("Calls the optional onAutoRefreshError() callback when trying to refresh an expired token", done => {
       sinon.stub(client.api.auth, "refresh").rejects({});
 
+      client.config.url = "https://example.com";
+      client.config.project = "testProject";
       client.config.token = jwt.sign({ foo: "bar" }, "secret-string", {
         expiresIn: "-20s",
         noTimestamp: true,
@@ -299,6 +316,7 @@ describe("Authentication", () => {
           email: "testing@example.com",
           password: "testPassword",
           persist: true,
+          project: "testProject",
           url: "https://demo-api.getdirectus.com",
         });
 
@@ -316,6 +334,7 @@ describe("Authentication", () => {
           email: "testing@example.com",
           password: "testPassword",
           url: "https://demo-api.getdirectus.com",
+          project: "testProject",
         });
 
         expect(client.api.auth.refreshInterval).to.be.undefined;
@@ -365,6 +384,7 @@ describe("Authentication", () => {
         password: "testPassword",
         persist: true,
         url: "https://demo-api.getdirectus.com",
+        project: "testProject"
       });
       expect(client.api.auth.refreshIfNeeded).to.have.not.been.called;
 

@@ -27,12 +27,6 @@ describe("Configuration", () => {
     });
 
     describe("defaults", () => {
-      it("project", () => {
-        const config = new Configuration({
-          url: "https://demo-api.getdirectus.com",
-        });
-        expect(config.project).to.equal("_");
-      });
       it("tokenExpirationTime", () => {
         const config = new Configuration({
           url: "https://demo-api.getdirectus.com",
@@ -43,23 +37,23 @@ describe("Configuration", () => {
       describe("custom defaults", () => {
         beforeEach(() => {
           Configuration.defaults = {
-            project: "custom",
+            mode: "cookie",
             tokenExpirationTime: 10,
           };
         });
 
         afterEach(() => {
           Configuration.defaults = {
-            project: "_",
+            mode: "jwt",
             tokenExpirationTime: 5 * 6 * 1000,
           };
         });
 
-        it("project", () => {
+        it("mode", () => {
           const config = new Configuration({
             url: "https://demo-api.getdirectus.com",
           });
-          expect(config.project).to.equal("custom");
+          expect(config.mode).to.equal("cookie");
         });
 
         it("tokenExpirationTime", () => {
@@ -103,7 +97,7 @@ describe("Configuration", () => {
       });
 
       expect(config.url).to.equal("https://demo-api.getdirectus.com");
-      expect(config.project).to.equal("_");
+      expect(config.project).to.be.undefined;
       expect(config.token).to.equal(undefined);
       expect(config.localExp).to.equal(undefined);
       expect(config.tokenExpirationTime).to.equal(5 * 6 * 1000);
@@ -141,7 +135,7 @@ describe("Configuration", () => {
         );
 
         expect(config.url).to.equal("https://demo-api.getdirectus.com");
-        expect(config.project).to.equal("_"); // default value
+        expect(config.project).to.be.undefined; // default value
         expect(config.token).to.be.undefined;
         expect(config.localExp).to.be.undefined;
         expect(config.tokenExpirationTime).to.equal(30000); // default value

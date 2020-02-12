@@ -71,7 +71,7 @@ describe("Request", () => {
       client.api.request("get", "/ping");
 
       expect(client.api.xhr.request).to.have.been.calledWith({
-        baseURL: "https://demo-api.getdirectus.com/_/",
+        baseURL: "https://demo-api.getdirectus.com/",
         data: {},
         headers: {},
         method: "get",
@@ -104,7 +104,7 @@ describe("Request", () => {
       );
 
       expect(client.api.xhr.request).to.have.been.calledWith({
-        baseURL: "https://demo-api.getdirectus.com/_/",
+        baseURL: "https://demo-api.getdirectus.com/",
         data: {
           testing: true,
         },
@@ -132,7 +132,7 @@ describe("Request", () => {
       client.api.request("get", "/utils/random_string", { queryParam: true });
 
       expect(client.api.xhr.request).to.have.been.calledWith({
-        baseURL: "https://demo-api.getdirectus.com/_/",
+        baseURL: "https://demo-api.getdirectus.com/",
         data: {},
         headers: {},
         method: "get",
@@ -165,7 +165,7 @@ describe("Request", () => {
       client.api.request("get", "/utils/random_string", { queryParam: true });
 
       expect(client.api.xhr.request).to.have.been.calledWith({
-        baseURL: "https://demo-api.getdirectus.com/_/",
+        baseURL: "https://demo-api.getdirectus.com/",
         data: {},
         headers: {
           Authorization: `Bearer ${client.config.token}`,
@@ -240,7 +240,7 @@ describe("Request", () => {
         status: 200,
       });
 
-      const result = await client.api.request("get", "/ping");
+      const result = await client.api.request("get", "/ping", {}, {}, true);
 
       expect(result).to.deep.include({
         data: {},
@@ -260,10 +260,10 @@ describe("Request", () => {
         },
       });
 
-      await client.api.request("get", "/interfaces", {}, {});
+      await client.api.request("get", "/interfaces", {}, {}, true);
 
       expect(client.api.xhr.request).to.have.been.calledWith({
-        baseURL: "https://demo-api.getdirectus.com/_/",
+        baseURL: "https://demo-api.getdirectus.com/",
         data: {},
         headers: {},
         method: "get",

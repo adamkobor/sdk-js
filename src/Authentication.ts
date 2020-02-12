@@ -3,18 +3,15 @@
  */
 
 import { IConfiguration, IConfigurationValues } from "./Configuration";
-
 // Other classes
 import { IAPI } from "./API";
-
 // Scheme types
 import { IAuthenticateResponse } from "./schemes/auth/Authenticate";
 import { ILoginBody, ILoginCredentials, ILoginOptions } from "./schemes/auth/Login";
-import { RefreshIfNeededResponse, ILogoutResponse } from "./schemes/response/Login";
+import { ILogoutResponse, RefreshIfNeededResponse } from "./schemes/response/Login";
 import { IRefreshTokenResponse } from "./schemes/response/Token";
-
 // Utilities
-import { isFunction, isObject, isString } from "./utils/is";
+import { isFunction, isString } from "./utils/is";
 import { getPayload } from "./utils/payload";
 
 interface IAuthenticationRefreshError {
@@ -25,13 +22,18 @@ interface IAuthenticationRefreshError {
 interface IAuthenticationInjectableProps {
   post: IAPI["post"];
   xhr: IAPI["xhr"];
+  request: IAPI["request"];
 }
 
 export interface IAuthentication {
   refreshInterval?: number;
+
   login(credentials: ILoginCredentials, options?: ILoginOptions): Promise<IAuthenticateResponse>;
+
   logout(): Promise<ILogoutResponse>;
+
   refreshIfNeeded(): Promise<[boolean, Error?]>;
+
   refresh(token: string): Promise<IRefreshTokenResponse>;
 }
 
@@ -138,9 +140,11 @@ export class Authentication implements IAuthentication {
    * Logs the user out by "forgetting" the token, and clearing the refresh interval
    */
   public async logout(): Promise<ILogoutResponse> {
-    const response = await this.inject.post<ILogoutResponse>("/auth/logout");
+    const response = await this.inject.request<ILogoutResponse>("post", "/auth/logout", {}, {}, true);
 
     this.config.token = null;
+    this.config.project = null;
+    this.config.url = null;
 
     if (this.refreshInterval) {
       this.stopInterval();

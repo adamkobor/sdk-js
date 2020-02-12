@@ -109,6 +109,7 @@ export class API implements IAPI {
     this.auth = new Authentication(config, {
       post: this.post.bind(this),
       xhr: this.xhr,
+      request: this.request.bind(this)
     });
 
     this.concurrent = concurrencyManager(this.xhr, 10);
